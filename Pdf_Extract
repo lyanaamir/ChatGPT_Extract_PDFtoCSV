@@ -1,0 +1,43 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Dec 29 22:42:25 2022
+
+@author: user
+"""
+
+import re
+import pandas as pd
+from collections import namedtuple
+from PyPDF2 import PdfReader
+
+# Define the named tuple for storing the data
+M3 = namedtuple('M3', ['Disability_Category', 'Participants'])
+
+# Define the regular expression for extracting the data
+pattern = r"((?P<Disability_Category>.*).+(?P<Participants>.*))"
+
+# Open the PDF file
+with open('Table.pdf', 'rb') as file:
+  # Create a PDF object
+  pdf = PdfReader(file)
+  # Get the first page
+  page = pdf.pages[0]
+  # Extract the text from the page
+  text = page.extract_text()
+  # Split the text into lines
+  lines = text.split('\n')
+
+# Extract the data from the lines
+data_list = []
+for line in lines:
+    # Use the regular expression to extract the data
+    match = re.search(pattern, line)
+    if match:
+        m3 = M3(Disability_Category=match.group('Disability_Category'), Participants=match.group('Participants'))
+        data_list.append(m3)
+
+# Convert the data to a Pandas DataFrame
+df = pd.DataFrame(data_list)
+
+# Write the DataFrame to a CSV file
+df.to_csv('data.csv', index=False)
